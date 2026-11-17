@@ -20,7 +20,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # 2. Быстрое хранилище кэша Redis (пригодится для нагрузки и модуля 4)
+  # 2. Redis (кэширование)
   redis:
     image: redis:7-alpine
     container_name: weather_redis
@@ -33,7 +33,7 @@ services:
       timeout: 3s
       retries: 5
 
-  # 3. Наш бэкенд сервис
+  # 3. Наш бэкенд на FastAPI
   backend:
     build:
       context: .
@@ -60,5 +60,33 @@ services:
       retries: 3
       start_period: 5s
 
+  # 4. Сборщик метрик Prometheus (Блок Б6)
+  prometheus:
+    image: prom/prometheus:v2.49.1
+    container_name: weather_prometheus
+    restart: always
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  # 5. Визуализация метрик Grafana (Блок Б6)
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: weather_grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+
 volumes:
   postgres_data:
+  grafana_data:

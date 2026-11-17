@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s       # Каждые 5 секунд опрашивать сервисы
+
+scrape_configs:
+  - job_name: 'weather_service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['backend:8000']   # Имя контейнера бэкенда и его порт внутри сети Docker
+        labels:
+          app_name: 'weather-service'
