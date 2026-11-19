@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        VM_IP = '192.168.1.6'
+        VM_IP = '172.20.10.14'
     }
 
     stages {
@@ -38,7 +38,7 @@ pipeline {
             steps {
                 echo '=== Шаг 5: Smoke-тест /health на Машине 2 ==='
                 sleep 5
-                sh 'curl -f http://192.168.1.6:8000/health'
+                sh 'curl -f http://$VM_IP:8000/health'
             }
         }
     }
@@ -48,7 +48,7 @@ pipeline {
             echo '=== Пайплайн успешно завершен! Проект развернут на Машине 2 ==='
         }
         failure {
-            echo '=== Пайплайн упал с ошибкой! Деплой отменен ==='
+            echo '=== Пайплайн упал с ошибкой! ==='
         }
     }
 }
