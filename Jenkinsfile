@@ -2,7 +2,9 @@ pipeline {
     agent any
 
     environment {
-        VM_IP = '172.20.10.14'
+        VM_HOST = 'host.docker.internal'
+        SSH_PORT = '2222'
+        HTTP_PORT = '8001'
     }
 
     stages {
@@ -12,7 +14,6 @@ pipeline {
                 sh 'flake8 app/ --select=F'
 
                 echo '=== Шаг 2: Запуск автотестов (Pytest) ==='
-                // Секреты безопасно забираются из сейфа Jenkins (требование Б4)
                 withCredentials([
                     string(credentialsId: 'ci-db-url', variable: 'DATABASE_URL'),
                     string(credentialsId: 'ci-redis-url', variable: 'REDIS_URL')
@@ -34,7 +35,7 @@ pipeline {
                 echo '=== Шаг 4: Деплой на Машину 2 (Ubuntu VM) по SSH ==='
                 withCredentials([usernamePassword(credentialsId: 'vm-ssh-credentials', usernameVariable: 'SSH_USER', passwordVariable: 'SSH_PASS')]) {
                     sh '''
-                        sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no "$SSH_USER@$VM_IP" "cd project_sofad && git pull && docker compose up -d --build"
+                        sshpass -p "$SSH_PASS" ssh -p $SSH_PORT -o StrictHostKeyChecking=no "$SSH_USER@$VM_HOST" "cd project_sofad && git pull && docker compose up -d --build"
                     '''
                 }
             }
@@ -44,7 +45,7 @@ pipeline {
             steps {
                 echo '=== Шаг 5: Smoke-тест /health на Машине 2 ==='
                 sleep 5
-                sh 'curl -f http://$VM_IP:8000/health'
+                sh 'curl -f http://$VM_HOST:$HTTP_PORT/health'
             }
         }
     }
