@@ -45,7 +45,8 @@ pipeline {
             steps {
                 echo '=== Шаг 5: Smoke-тест /health на Машине 2 ==='
                 sleep 5
-                sh 'curl -f http://$VM_HOST:$HTTP_PORT/health'
+                // Пробуем до 10 раз с интервалом в 3 секунды, пока сервис окончательно не прогреется
+                sh 'curl --retry 10 --retry-delay 3 --retry-all-errors -f http://$VM_HOST:$HTTP_PORT/health'
             }
         }
     }
