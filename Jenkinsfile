@@ -12,7 +12,13 @@ pipeline {
                 sh 'flake8 app/ --select=F'
 
                 echo '=== Шаг 2: Запуск автотестов (Pytest) ==='
-                sh 'pytest -p no:cacheprovider tests/'
+                // Секреты безопасно забираются из сейфа Jenkins (требование Б4)
+                withCredentials([
+                    string(credentialsId: 'ci-db-url', variable: 'DATABASE_URL'),
+                    string(credentialsId: 'ci-redis-url', variable: 'REDIS_URL')
+                ]) {
+                    sh 'pytest -p no:cacheprovider tests/'
+                }
             }
         }
 
