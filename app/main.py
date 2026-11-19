@@ -9,8 +9,10 @@ from app.models import CityQuery
 from app.config import settings
 from prometheus_fastapi_instrumentator import Instrumentator
 
-# Создаем таблицы в БД при старте
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception:
+    pass
 
 # Инициализируем приложение. Swagger (А4) генерируется автоматически по адресу /docs
 app = FastAPI(
